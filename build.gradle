@@ -1,143 +1,159 @@
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.gradle' version '7.0.80'  // Latest NeoForge Gradle plugin
-    id 'io.franzbecker.gradle-lombok' version '6.0.0'  // Updated Lombok plugin
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
-version = '1.0.0'  // Update this based on your versioning scheme
-group = 'net.gegy1000'  // Your existing group
-archivesBaseName = 'practical-space-fireworks'
+apply plugin: 'org.spongepowered.mixin'
 
-// Configure Java compatibility - Updated to Java 21
+group = mod_group_id
+version = mod_version
+
+base {
+    archivesName = mod_id
+}
+
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)  // Updated to Java 21
-    }
-    // Enable preview features if needed
-    withSourcesJar()
-    withJavadocJar()
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
 minecraft {
-    mappings channel: 'official', version: '1.21.1'
-    
+    mappings channel: mapping_channel, version: mapping_version
+    copyIdeResources = true
+
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-    
+
     runs {
-        client {
+        configureEach {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            // Add Java 21 specific flags
-            jvmArgs = [
-                '--enable-preview',
-                '-XX:+UnlockExperimentalVMOptions',
-                '-Djava.security.manager=allow'
-            ]
+
             mods {
-                practicalspacefireworks {
+                "${mod_id}" {
                     source sourceSets.main
                 }
             }
         }
-        
+
+        client {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
         server {
-            workingDirectory project.file('run/server')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            // Add Java 21 specific flags
-            jvmArgs = [
-                '--enable-preview',
-                '-XX:+UnlockExperimentalVMOptions',
-                '-Djava.security.manager=allow'
-            ]
-            mods {
-                practicalspacefireworks {
-                    source sourceSets.main
-                }
-            }
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '--nogui'
         }
-        
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+
         data {
-            workingDirectory project.file('run/data')
-            args '--mod', 'practicalspacefireworks', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            // Add Java 21 specific flags
-            jvmArgs = [
-                '--enable-preview',
-                '-XX:+UnlockExperimentalVMOptions',
-                '-Djava.security.manager=allow'
-            ]
-            mods {
-                practicalspacefireworks {
-                    source sourceSets.main
-                }
-            }
+            workingDirectory project.file('run-data')
+
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
     }
 }
 
-// Repositories for dependencies
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+
+    config "${mod_id}.mixins.json"
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
 repositories {
-    mavenCentral()
-    maven { 
-        name = 'NeoForged'
-        url = 'https://maven.neoforged.net/releases' 
-    }
+    flatDir { dirs 'libs' }
+
+    maven { url 'https://modmaven.dev/' }
+
     maven {
-        name = 'ModMaven'
-        url = 'https://modmaven.dev'
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
     }
-    maven { 
-        url = 'https://maven.tterrag.com/' 
+
+    maven {
+        url "https://cursemaven.com"
     }
+
+//    maven {
+//        // Shedaniel's maven (Architectury API)
+//        url = "https://maven.architectury.dev"
+//        content {
+//            includeGroup "dev.architectury"
+//        }
+//    }
+//
+//    maven {
+//        // saps.dev Maven (KubeJS and Rhino)
+//        url = "https://maven.saps.dev/minecraft"
+//        content {
+//            includeGroup "dev.latvian.mods"
+//        }
+//    }
 }
 
 dependencies {
-    // NeoForge
-    minecraft "net.neoforged:neoforge:${minecraft_version}-${neoforge_version}"
-    
-    // JEI - Update version as needed
-    implementation fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
-    
-    // Updated Lombok for Java 21
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    //Mekanism
+    implementation fg.deobf("mekanism:Mekanism:${mekanism_version}")
+    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}:additions")
+    implementation fg.deobf("mekanism:Mekanism:${mekanism_version}:generators")
+    implementation fg.deobf("mekanism:Mekanism:${mekanism_version}:tools")
+
+    implementation fg.deobf("curse.maven:mekanism-covers-1119874:5831281")
+
+    // jei
+    implementation fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+
+//    implementation fg.deobf("curse.maven:evolved-mekanism-1230085:6456494")
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
-// Processing resources
-processResources {
-    inputs.property "version", project.version
-    inputs.property "minecraft_version", minecraft_version
-    
-    filesMatching('META-INF/mods.toml') {
-        expand 'version': project.version,
-               'minecraft_version': minecraft_version
-    }
-}
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+    ]
 
-// Jar configuration
-jar {
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }}
+
+tasks.named('jar', Jar).configure {
     manifest {
         attributes([
-            "Specification-Title": "practicalspacefireworks",
-            "Specification-Vendor": "waddon1",
-            "Specification-Version": "1",
-            "Implementation-Title": project.name,
-            "Implementation-Version": project.jar.archiveVersion,
-            "Implementation-Vendor": "waddon1",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            // Add Java 21 specific manifest entries
-            "Multi-Release": "true"
+                "Specification-Title": mod_id,
+                "Specification-Vendor": mod_authors,
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.jar.archiveVersion,
+                "Implementation-Vendor": mod_authors,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
+
+    finalizedBy 'reobfJar'
 }
 
-// Add specific Java 21 compiler options
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.compilerArgs += [
-        '--enable-preview',
-        '-Xlint:preview'
-    ]
 }
