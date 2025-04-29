@@ -1,186 +1,143 @@
-import org.ajoberstar.grgit.Grgit
-
-buildscript {
-<repository>
-  <id>neoforged</id>
-  <name>NeoForged Maven</name>
-  <url>https://maven.neoforged.net/<repository></url>
-</repository>
-    }
-  }
-  dependencies {
-    classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
-    classpath 'org.ajoberstar:gradle-git:0.10.1'
-  }
-}
-
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '2.1'
-   	id 'com.matthewprenger.cursegradle' version '1.2.0'
+    id 'eclipse'
+    id 'idea'
+    id 'net.neoforged.gradle' version '7.0.80'  // Latest NeoForge Gradle plugin
+    id 'io.franzbecker.gradle-lombok' version '6.0.0'  // Updated Lombok plugin
 }
 
-apply plugin: "net.minecraftforge.gradle.forge"
+version = '1.0.0'  // Update this based on your versioning scheme
+group = 'net.gegy1000'  // Your existing group
+archivesBaseName = 'practical-space-fireworks'
 
-def repo = Grgit.open(project.file('.'))
-project.ext.gitHash = repo.log().find().abbreviatedId
-
-boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false');
-
-ext.buildnumber = 0
-project.buildnumber = System.getenv('BUILD_NUMBER') != null ? System.getenv('BUILD_NUMBER') : project.ext.gitHash
-
-ext.mod_file = ""
-project.mod_file = getModFile()
-if (mod_file.isEmpty()) {
-  throw new ProjectConfigurationException("Could not locate main mod file!", null)
+// Configure Java compatibility - Updated to Java 21
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)  // Updated to Java 21
+    }
+    // Enable preview features if needed
+    withSourcesJar()
+    withJavadocJar()
 }
-def mod_version = getModField("VERSION", mod_file)
-if (mod_version.isEmpty()) {
-  throw new ProjectConfigurationException("Could not locate mod version in " + mod_file, null)
-}
-version = mod_version + ".${buildnumber}"
-group = "net.gegy1000"
-archivesBaseName = "practical-space-fireworks"
-sourceCompatibility = targetCompatibility = "1.8"
 
 minecraft {
-    version = "${minecraft_version}-${forge_version}"
-    runDir = 'minecraft'
-    mappings = 'stable_39'
+    mappings channel: 'official', version: '1.21.1'
+    
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            // Add Java 21 specific flags
+            jvmArgs = [
+                '--enable-preview',
+                '-XX:+UnlockExperimentalVMOptions',
+                '-Djava.security.manager=allow'
+            ]
+            mods {
+                practicalspacefireworks {
+                    source sourceSets.main
+                }
+            }
+        }
+        
+        server {
+            workingDirectory project.file('run/server')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            // Add Java 21 specific flags
+            jvmArgs = [
+                '--enable-preview',
+                '-XX:+UnlockExperimentalVMOptions',
+                '-Djava.security.manager=allow'
+            ]
+            mods {
+                practicalspacefireworks {
+                    source sourceSets.main
+                }
+            }
+        }
+        
+        data {
+            workingDirectory project.file('run/data')
+            args '--mod', 'practicalspacefireworks', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            // Add Java 21 specific flags
+            jvmArgs = [
+                '--enable-preview',
+                '-XX:+UnlockExperimentalVMOptions',
+                '-Djava.security.manager=allow'
+            ]
+            mods {
+                practicalspacefireworks {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
 }
 
+// Repositories for dependencies
 repositories {
     mavenCentral()
-    jcenter()
-    maven { url = 'https://maven.tterrag.com' }
-    maven { url = 'https://tehnut.info/maven' }
-    maven { url = 'https://dvs1.progwml6.com/files/maven' }
+    maven { 
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases' 
+    }
+    maven {
+        name = 'ModMaven'
+        url = 'https://modmaven.dev'
+    }
+    maven { 
+        url = 'https://maven.tterrag.com/' 
+    }
 }
 
 dependencies {
-    runtime 'team.chisel.ctm:CTM:MC1.12.2-0.3.3.22'
-    compile 'mcp.mobius.waila:Hwyla:1.8.26-B41_1.12.2'
-    deobfProvided 'mezz.jei:jei_1.12.2:4.15.0.272:api'
-    runtime 'mezz.jei:jei_1.12.2:4.15.0.272'
+    // NeoForge
+    minecraft "net.neoforged:neoforge:${minecraft_version}-${neoforge_version}"
+    
+    // JEI - Update version as needed
+    implementation fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
+    
+    // Updated Lombok for Java 21
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
-jar {
-    from sourceSets.api.output
-    from sourceSets.main.output
-}
-
-task apiJar(type: Jar) {
-    from sourceSets.api.allSource
-    from sourceSets.api.output
-    classifier = 'api'
-}
-
-reobf {
-    apiJar { mappingType = 'SEARGE' }
-}
-
-tasks.build.dependsOn apiJar, reobfApiJar
-
+// Processing resources
 processResources {
-  inputs.property "version", project.version
-  inputs.property "mcversion", project.minecraft.version
-
-  from(sourceSets.main.resources.srcDirs) {
-    include "mcmod.info"
-    expand "version": project.version, "mcversion": project.minecraft.version
-  }
-
-  from(sourceSets.main.resources.srcDirs) {
-    exclude "mcmod.info"
-  }
-}
-
-lombok {
-    version = '1.18.6'
-    sha256 = ''
-}
-
-tasks.eclipse.dependsOn installLombok
-
-String getChangelogText() {
-    def changelogFile = file('changelog.txt')
-    String str = ''
-    int lineCount = 0
-    boolean done = false
-    changelogFile.eachLine {
-        if (done || it == null) {
-            return
-        }
-        if (it.size() > 1) {
-            def temp = it
-            if (lineCount == 0) {
-                temp = getModField("NAME", mod_file) + " ${version}"
-                temp = "<h2>$temp</h2>"
-            } else if (it.startsWith('-')) {
-                temp = "&nbsp;&nbsp;&nbsp;$temp"
-                temp = temp.replaceAll("(\\S+\\/\\S+)#([0-9]+)\\b", "<a href=\"https://github.com/\$1/issues/\$2\">\$0</a>");
-                temp = temp.replaceAll("#([0-9]+)\\b(?!<\\/a>)", "<a href=\"https://github.com/$github_project/issues/\$1\">\$0</a>");
-            } else {
-                temp = "<h4>$temp</h4>"
-            }
-            str += "$temp<br/>"
-            lineCount++
-            return
-        } else {
-            done = true
-        }
-    }
-    return str
-}
-
-tasks.curseforge.enabled = !dev && project.hasProperty('curseforge_key')
-
-curseforge {
-    if (project.hasProperty('curseforge_key')) {
-        apiKey = project.curseforge_key
-    }
-
-    project {
-        id = project.project_id
-        changelog = System.getenv('CHANGELOG') == null || System.getenv('CHANGELOG') == 'none' ? getChangelogText() : System.getenv('CHANGELOG')
-        changelogType = 'html'
-        releaseType = project.curse_type
-        addGameVersion '1.12.2'
-        mainArtifact(jar) { displayName = getModField("NAME", mod_file) + " - ${version}" }
-        relations { requiredDependency 'ctm' }
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", minecraft_version
+    
+    filesMatching('META-INF/mods.toml') {
+        expand 'version': project.version,
+               'minecraft_version': minecraft_version
     }
 }
 
-String getModFile() {
-  String path = ""
-  FileTree tree = fileTree(dir: 'src/main/java')
-  tree.include '**/*.java'
-  tree.visit { element ->
-    if (element.file.isFile()) {
-      element.file.eachLine { String s ->
-        s = s.trim()
-        if (s.matches("@Mod\\s*\\(.*")) {
-          path = "src/main/java/$element.relativePath"
-        }
-      }
+// Jar configuration
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "practicalspacefireworks",
+            "Specification-Vendor": "waddon1",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": project.jar.archiveVersion,
+            "Implementation-Vendor": "waddon1",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+            // Add Java 21 specific manifest entries
+            "Multi-Release": "true"
+        ])
     }
-  }
-  return path
 }
 
-String getModField(String type, String mod_file) {
-  if (mod_file.length() == 0) {
-    return ""
-  }
-  String field = ""
-  String prefix = "public static final String $type = \""
-  File file = file(mod_file)
-  file.eachLine { String s ->
-    s = s.trim()
-    if (s.startsWith(prefix)) {
-      s = s.substring(prefix.length(), s.length() - 2)
-      field = s
-    }
-  }
-  return field
+// Add specific Java 21 compiler options
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += [
+        '--enable-preview',
+        '-Xlint:preview'
+    ]
 }
