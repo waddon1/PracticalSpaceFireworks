@@ -1,4 +1,7 @@
 {
-  "pack_format": 3,
-  "description": "The default look of Practical Space Fireworks"
+  "pack": {
+    "description": "Practical Space Fireworks resources",
+    "pack_format": 18,
+    "forge:server_data_pack_format": 18
+  }
 }
