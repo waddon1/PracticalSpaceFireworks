@@ -1,11 +1,11 @@
 import org.ajoberstar.grgit.Grgit
 
 buildscript {
-  repositories {
-    jcenter()
-    maven {
-      name = "neoforge"
-      url = "http://files.minecraftforge.net/maven"
+<repository>
+  <id>neoforged</id>
+  <name>NeoForged Maven</name>
+  <url>https://maven.neoforged.net/<repository></url>
+</repository>
     }
   }
   dependencies {
