@@ -1,0 +1,39 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+issueTrackerURL="https://github.com/waddon1/PracticalSpaceFireworks/issues"
+
+[[mods]]
+modId="practicalspacefireworks"
+version="${version}"
+displayName="Practical Space Fireworks"
+updateJSONURL="https://github.com/waddon1/PracticalSpaceFireworks/raw/master/update.json"
+displayURL="https://github.com/waddon1/PracticalSpaceFireworks"
+logoFile="logo.png"
+credits="Thanks to all contributors"
+authors="waddon1"
+description='''
+A mod that adds practical space fireworks to Minecraft.
+'''
+
+[[dependencies.practicalspacefireworks]]
+    modId="neoforge"
+    mandatory=true
+    versionRange="[20.4.76-beta,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.practicalspacefireworks]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.21.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+# Optional dependencies
+[[dependencies.practicalspacefireworks]]
+    modId="jei"
+    mandatory=false
+    versionRange="[17.0.0.30,)"
+    ordering="AFTER"
+    side="BOTH"
