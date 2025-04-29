@@ -12,4 +12,4 @@ PSF uses sounds from:
 - [thatjeffcarter](https://freesound.org/people/thatjeffcarter/sounds/128075/)
 - [pushtobreak](https://freesound.org/people/pushtobreak/sounds/17754/)
 
-Team J.D Modding's attempt to bring PSF to 1.21.1
+Team J.D Modding's attempt to bring PSF to 1.21.1 NeoForge.
