@@ -24,7 +24,7 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion = JavaLanguageVersion.of(17)  // Changed back to Java 17
 }
 
 minecraft {
@@ -107,18 +107,8 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    //Mekanism
-    implementation fg.deobf("mekanism:Mekanism:${mekanism_version}")
-    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}:additions")
-    implementation fg.deobf("mekanism:Mekanism:${mekanism_version}:generators")
-    implementation fg.deobf("mekanism:Mekanism:${mekanism_version}:tools")
-
-    implementation fg.deobf("curse.maven:mekanism-covers-1119874:5831281")
-
     // jei
     implementation fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
-
-//    implementation fg.deobf("curse.maven:evolved-mekanism-1230085:6456494")
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
