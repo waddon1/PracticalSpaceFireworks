@@ -130,8 +130,14 @@ tasks.named('jar', Jar).configure {
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
+    // Remove the finalizedBy 'reobfJar' line since it's not needed for NeoForge 1.21.1
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+// Add this line at the end of the file
+tasks.named('build').configure {
+    dependsOn('jar')
 }
