@@ -13,7 +13,7 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion = JavaLanguageVersion.of(21) // Updated to Java 21
 }
 
 minecraft {
@@ -117,7 +117,7 @@ tasks.named('jar', Jar).configure {
         ])
     }
 
-    finalizedBy 'reobfJar'  // Ensure this task is finalized by reobfJar
+    finalizedBy 'reobfJar'  // Ensure the jar task is finalized by reobfJar
 }
 
 tasks.withType(JavaCompile).configureEach {
