@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'org.spongepowered.mixin' version '0.7.+'
-    id 'net.neoforged.gradle.userdev' version '7.0.+'
+    id 'net.neoforged.gradle.userdev' version '7.0.+'  // This will now work with Gradle 8.10
 }
 
 group = maven_group
