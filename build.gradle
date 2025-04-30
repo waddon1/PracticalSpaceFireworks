@@ -1,7 +1,16 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.neoforged.net/releases' }
+        maven { url = 'https://maven.minecraftforge.net/' }
+        mavenCentral()
+    }
+}
+
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.gradle' version '7.0.80'
+    id 'net.neoforged.gradle.userdev' version '7.0.80'
     id 'org.spongepowered.mixin' version '0.7.+'
 }
 
