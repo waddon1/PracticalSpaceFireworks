@@ -8,4 +8,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'practical-space-fireworks'  // Changed to match your archives_base_name from gradle.properties
+rootProject.name = 'practical-space-fireworks'
