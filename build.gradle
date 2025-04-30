@@ -1,8 +1,8 @@
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.gradle.userdev' version '7.0.+'  // This needs to be first
-    id 'org.spongepowered.mixin' version '0.7.+'       // This should come after
+    id 'net.neoforged.gradle.userdev' version '7.0.+'  // NeoForge Gradle plugin must be applied first
+    id 'org.spongepowered.mixin' version '0.7.+'       // Mixin plugin applied after NeoForge
 }
 
 group = maven_group
@@ -38,12 +38,12 @@ minecraft {
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
         }
-        
+
         server {
             property 'forge.enabledGameTestNamespaces', mod_id
             args '--nogui'
         }
-        
+
         gameTestServer {
             property 'forge.enabledGameTestNamespaces', mod_id
         }
@@ -117,7 +117,7 @@ tasks.named('jar', Jar).configure {
         ])
     }
 
-    finalizedBy 'reobfJar'
+    finalizedBy 'reobfJar'  // Ensure this task is finalized by reobfJar
 }
 
 tasks.withType(JavaCompile).configureEach {
