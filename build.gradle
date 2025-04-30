@@ -1,8 +1,8 @@
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.gradle.userdev' version '7.0.+'  // Update to the latest compatible version
-    id 'org.spongepowered.mixin' version '0.7.+'       // Ensure compatibility with Java 21
+    id 'net.neoforged.gradle' version '7.0.80'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 group = maven_group
@@ -13,13 +13,14 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21) // Use Java 21
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
 minecraft {
     mappings channel: 'official', version: minecraft_version
+    
+    // NeoForge specific settings for 1.21.1
     copyIdeResources = true
-
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
@@ -27,6 +28,10 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            
+            // Updated for NeoForge
+            property 'neoforge.enableGameTestNamespaces', mod_id
+            property 'neoforge.enabledGameTestNamespaces', mod_id
 
             mods {
                 "${mod_id}" {
@@ -36,16 +41,16 @@ minecraft {
         }
 
         client {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'neoforge.enabledGameTestNamespaces', mod_id
         }
 
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'neoforge.enabledGameTestNamespaces', mod_id
             args '--nogui'
         }
 
         gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'neoforge.enabledGameTestNamespaces', mod_id
         }
 
         data {
@@ -66,7 +71,6 @@ repositories {
     mavenCentral()
     maven { url = 'https://maven.neoforged.net/releases' }
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-    maven { url = 'https://maven.minecraftforge.net/' }
     maven { url = 'https://modmaven.dev/' }
     maven { 
         name = "Jared's maven"
@@ -79,10 +83,11 @@ repositories {
 }
 
 dependencies {
+    // Updated NeoForge dependency for 1.21.1
     minecraft "net.neoforged:neoforge:${minecraft_version}-${neoforge_version}"
 
-    // JEI
-    implementation fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    // JEI - Make sure this version is compatible with 1.21.1
+    implementation fg.deobf("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
@@ -116,8 +121,6 @@ tasks.named('jar', Jar).configure {
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
-
-    finalizedBy 'reobfJar'  // Ensure the jar task is finalized by reobfJar
 }
 
 tasks.withType(JavaCompile).configureEach {
